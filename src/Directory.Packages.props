@@ -7,17 +7,17 @@
     <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.2.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.5" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
     <PackageVersion Include="ProjectDefaults" Version="1.0.174" />
-    <PackageVersion Include="ProjectFiles" Version="1.1.1" />
+    <PackageVersion Include="ProjectFiles" Version="1.2.0" />
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="CliFx" Version="3.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageVersion Include="Verify.DiffPlex" Version="3.1.2" />
+    <PackageVersion Include="Verify.DiffPlex" Version="3.2.0" />
     <PackageVersion Include="Verify.ImageMagick" Version="3.8.8" />
     <PackageVersion Include="Verify.Serilog" Version="3.4.0" />
-    <PackageVersion Include="Verify.TUnit" Version="31.16.3" />
-    <PackageVersion Include="TUnit" Version="1.45.8" />
+    <PackageVersion Include="Verify.TUnit" Version="31.18.0" />
+    <PackageVersion Include="TUnit" Version="1.45.29" />
   </ItemGroup>
 </Project>
