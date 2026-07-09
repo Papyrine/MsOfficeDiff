@@ -4,7 +4,7 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.4.0" />
+    <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.4.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.5" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
@@ -20,7 +20,7 @@
     <PackageVersion Include="Verify.DiffPlex" Version="3.3.0" />
     <PackageVersion Include="Verify.ImageMagick" Version="3.8.8" />
     <PackageVersion Include="Verify.Serilog" Version="3.4.0" />
-    <PackageVersion Include="Verify.TUnit" Version="31.21.0" />
+    <PackageVersion Include="Verify.TUnit" Version="31.22.0" />
     <PackageVersion Include="TUnit" Version="1.58.0" />
   </ItemGroup>
 </Project>
