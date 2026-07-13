@@ -132,7 +132,27 @@ public static partial class Word
             NoEncodingDialog: true);
         // Hide document window to prevent flickering while preparing comparison
         doc.ActiveWindow.Visible = false;
+        Unprotect(doc);
         return doc;
+    }
+
+    // CompareDocuments blocks forever on a document with enforced editing protection: Word waits
+    // on a "remove protection to compare the documents" prompt that DisplayAlerts cannot suppress,
+    // leaving WINWORD.EXE alive with no visible window (Launch only sets word.Visible AFTER the
+    // compare). Remove protection from the in-memory copy so the compare proceeds. The document
+    // was opened ReadOnly and is never saved, so the file on disk is untouched. The empty-password
+    // overload throws — rather than showing its own blocking password prompt — when the document
+    // is password protected, so a stray protected input surfaces as a logged "Failed to launch"
+    // instead of another silent hang.
+    internal static void Unprotect(dynamic doc)
+    {
+        // WdProtectionType.wdNoProtection = -1
+        if (doc.ProtectionType == -1)
+        {
+            return;
+        }
+
+        doc.Unprotect(Password: "");
     }
 
     static void HideNavigationPane(dynamic word) =>

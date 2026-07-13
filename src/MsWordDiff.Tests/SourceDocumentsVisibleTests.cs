@@ -1,3 +1,4 @@
+[NotInParallel("MicrosoftWord")]
 public class SourceDocumentsVisibleTests
 {
     [Test]
@@ -9,7 +10,12 @@ public class SourceDocumentsVisibleTests
             Skip.Test("Microsoft Word is not installed");
         }
 
+        // Track the WINWORD this test spawns so it can be reaped in the finally: word.Quit can
+        // leave the process alive while COM RCWs for the child documents are still rooted, which
+        // otherwise pollutes the process-counting ProcessCleanupTests.
+        var existingPids = Word.GetWordProcessIds();
         dynamic word = Activator.CreateInstance(wordType)!;
+        var process = Word.WaitForNewWordProcess(existingPids, TimeSpan.FromSeconds(5));
         try
         {
             word.DisplayAlerts = 0;
@@ -36,6 +42,19 @@ public class SourceDocumentsVisibleTests
         finally
         {
             Marshal.ReleaseComObject(word);
+            if (process is { HasExited: false })
+            {
+                try
+                {
+                    process.Kill();
+                }
+                catch
+                {
+                    // Process may have exited between the check and the kill.
+                }
+            }
+
+            process?.Dispose();
         }
     }
 }
