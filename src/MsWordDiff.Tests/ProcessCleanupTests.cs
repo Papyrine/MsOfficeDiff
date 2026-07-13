@@ -1,3 +1,4 @@
+[NotInParallel("MicrosoftWord")]
 public class ProcessCleanupTests
 {
     [Test]
