@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <PackageTags>Word, Diff, Compare</PackageTags>
     <Description>A .NET tool that compares two Word/Excel documents using the Microsoft Word/Excel built-in document comparison features.</Description>
     <Nullable>enable</Nullable>
