@@ -10,19 +10,8 @@ public static partial class Word
 
         var job = JobObject.Create();
 
-        // Snapshot existing Word PIDs before creating the COM instance, then poll
-        // for the newly-spawned WINWORD.EXE so we can put it in the Job Object before
-        // any operation that can throw. This is critical for the DiffEngineTray
-        // "accept" flow: tray hard-kills diffword.exe (Process.Kill), which only
-        // reaps WINWORD via KILL_ON_JOB_CLOSE if WINWORD was actually assigned to
-        // our job. A short retry loop is needed because Process.GetProcessesByName
-        // can lag the Activator return — particularly under Click-to-Run / AppV
-        // where Word spawns through a launcher chain.
-        var existingPids = GetWordProcessIds();
-        dynamic word = Activator.CreateInstance(wordType)!;
-        var process = WaitForNewWordProcess(existingPids, TimeSpan.FromSeconds(5))
-            ?? throw new("Failed to locate the WINWORD.EXE process spawned by COM activation");
-        JobObject.AssignProcess(job, process.Handle);
+        var (word, process) = await CreateWordInJob(wordType, job);
+        Log.Information("WINWORD {WordPid} assigned to job. Comparing {Path1} and {Path2}", process.Id, path1, path2);
 
         try
         {
@@ -50,6 +39,7 @@ public static partial class Word
             SetForegroundWindow((IntPtr)word.ActiveWindow.Hwnd);
 
             await process.WaitForExitAsync();
+            Log.Information("WINWORD {WordPid} exited", process.Id);
 
             Marshal.ReleaseComObject(compare);
         }
@@ -67,7 +57,68 @@ public static partial class Word
             JobObject.Close(job);
         }
 
-        RestoreRibbon(wordType);
+        await RestoreRibbon(wordType);
+    }
+
+    // Serialize the snapshot-launch-identify sequence across concurrent diffword
+    // instances (same pattern as diffexcel's SpreadsheetCompare). Without this,
+    // instances launched near-simultaneously (eg Verify reporting several failed
+    // snapshots from one test run) snapshot overlapping PID sets and can claim the
+    // same, or each other's, WINWORD. A misidentified WINWORD is assigned to the
+    // wrong Job Object (or none), so killing its diffword (DiffEngineTray "accept")
+    // leaves it running as an invisible zombie that still holds locks on the
+    // compared files. A file lock is used instead of a Mutex because file locks
+    // are not thread-affine, allowing async code within the critical section.
+    static readonly string identifyLockPath = Path.Combine(Path.GetTempPath(), "MsWordDiff.identify.lock");
+
+    internal static async Task<FileStream> AcquireIdentifyLock()
+    {
+        for (var i = 0; i < 300; i++)
+        {
+            try
+            {
+                return new(identifyLockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                await Task.Delay(100);
+            }
+        }
+
+        throw new IOException($"Failed to acquire lock file: {identifyLockPath}");
+    }
+
+    // Creates the Word COM instance and assigns its WINWORD to the job before any
+    // other operation. Snapshot existing Word PIDs before creating the COM instance,
+    // then poll for the newly-spawned WINWORD.EXE. This is critical for the
+    // DiffEngineTray "accept" flow: tray hard-kills diffword.exe (Process.Kill),
+    // which only reaps WINWORD via KILL_ON_JOB_CLOSE if WINWORD was actually
+    // assigned to our job. The poll retry loop is needed because
+    // Process.GetProcessesByName can lag the Activator return — particularly under
+    // Click-to-Run / AppV where Word spawns through a launcher chain.
+    // If identification or assignment fails, the just-created instance is quit or
+    // killed rather than left orphaned.
+    static async Task<(dynamic word, Process process)> CreateWordInJob(Type wordType, IntPtr job)
+    {
+        using (await AcquireIdentifyLock())
+        {
+            var existingPids = GetWordProcessIds();
+            dynamic word = Activator.CreateInstance(wordType)!;
+            Process? process = null;
+            try
+            {
+                process = WaitForNewWordProcess(existingPids, TimeSpan.FromSeconds(5))
+                    ?? throw new("Failed to locate the WINWORD.EXE process spawned by COM activation");
+                JobObject.AssignProcess(job, process.Handle);
+                return (word, process);
+            }
+            catch
+            {
+                QuitAndKill(word, process);
+                Marshal.ReleaseComObject(word);
+                throw;
+            }
+        }
     }
 
     internal static dynamic LaunchCompare(dynamic word, dynamic doc1, dynamic doc2)
@@ -170,18 +221,10 @@ public static partial class Word
     // ribbon so the user's next normal Word session isn't affected. This instance
     // is assigned to its own Job Object and has a kill fallback to prevent zombies
     // (previously it had neither, making it the primary source of leaked processes).
-    static void RestoreRibbon(Type wordType)
+    static async Task RestoreRibbon(Type wordType)
     {
         var job = JobObject.Create();
-        // Same poll-and-assign-before-throwables pattern as Launch. Previously this
-        // path had no fallback when FindNewWordProcess returned null, so a failed
-        // Quit() left the process orphaned (process was null → QuitAndKill couldn't
-        // force-kill, and the job had nothing assigned to reap).
-        var existingPids = GetWordProcessIds();
-        dynamic word = Activator.CreateInstance(wordType)!;
-        var process = WaitForNewWordProcess(existingPids, TimeSpan.FromSeconds(5))
-            ?? throw new("Failed to locate the WINWORD.EXE process spawned by COM activation");
-        JobObject.AssignProcess(job, process.Handle);
+        var (word, process) = await CreateWordInJob(wordType, job);
 
         try
         {
