@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
+    <NoWarn>SC023</NoWarn>
     <Version>1.0.3</Version>
     <PackageTags>Word, Diff, Compare</PackageTags>
     <Description>A .NET tool that compares two Word/Excel documents using the Microsoft Word/Excel built-in document comparison features.</Description>
@@ -13,6 +14,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <PackageLicenseFile>OsmfEula.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Verify_SponsorshipLicenseIgnored>true</Verify_SponsorshipLicenseIgnored>
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\OsmfEula.txt" Pack="true" PackagePath="" Visible="false" />
