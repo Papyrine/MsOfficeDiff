@@ -21,6 +21,6 @@
     <PackageVersion Include="Verify.ImageMagick" Version="3.10.0" />
     <PackageVersion Include="Verify.Serilog" Version="3.4.0" />
     <PackageVersion Include="Verify.TUnit" Version="33.0.2" />
-    <PackageVersion Include="TUnit" Version="1.68.0" />
+    <PackageVersion Include="TUnit" Version="1.68.4" />
   </ItemGroup>
 </Project>
