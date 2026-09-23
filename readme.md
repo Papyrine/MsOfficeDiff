@@ -1,6 +1,6 @@
 # <img src="/src/icon.png" height="30px"> MsOfficeDiff
 
-[![Build status](https://img.shields.io/appveyor/build/SimonCropp/MsOfficeDiff)](https://ci.appveyor.com/project/SimonCropp/MsOfficeDiff)
+[![Build status](https://github.com/Papyrine/MsOfficeDiff/actions/workflows/build.yml/badge.svg)](https://github.com/Papyrine/MsOfficeDiff/actions/workflows/build.yml)
 [![NuGet Status](https://img.shields.io/nuget/v/MsWordDiff.svg?label=MsWordDiff)](https://www.nuget.org/packages/MsWordDiff/)
 [![NuGet Status](https://img.shields.io/nuget/v/MsExcelDiff.svg?label=MsExcelDiff)](https://www.nuget.org/packages/MsExcelDiff/)
 
